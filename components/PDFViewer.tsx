@@ -15,8 +15,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ file }) => {
 
   const canvasRefs = useRef<HTMLCanvasElement | null>(null);
   const annotations = useRef<Record<number, Array<{ x: number; y: number; mode: string; color: string; text?: string; path?: { x: number; y: number } }>>>({});
-  const isDrawing = useRef(false);
-  const signaturePath = useRef<Array<{ x: number; y: number }>>([]);
+  // const isDrawing = useRef(false);
+  // const signaturePath = useRef<Array<{ x: number; y: number }>>([]);
 
   useEffect(() => {
     loadPdf(file);
@@ -67,11 +67,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ file }) => {
       ctx.fillStyle = annotation.color;
       ctx.globalAlpha = 0.5;
 
-      if (annotation.mode === "highlight") {
+      if (annotationMode === "highlight") {
         ctx.fillRect(annotation.x - 50, annotation.y - 10, 100, 20);
       } else if (annotation.mode === "underline") {
         ctx.fillRect(annotation.x - 50, annotation.y + 5, 100, 3);
-      } else if (annotation.mode === "comment") {
+      } else if (annotationMode === "comment") {
         ctx.fillStyle = "blue";
         ctx.fillText("💬", annotation.x, annotation.y);
       }
@@ -96,7 +96,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ file }) => {
 
     for (const pageIndex in annotations.current) {
       const page = pages[parseInt(pageIndex)];
-      const { width, height } = page.getSize();
+      const {  height } = page.getSize();
 
       (annotations.current[parseInt(pageIndex)] || []).forEach((annotation) => {
         if (annotation.mode === "highlight") {

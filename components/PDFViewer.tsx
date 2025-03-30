@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef,  useCallback } from "react";
 import { PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
-import Image from "next/image";
 import { Menu, X } from "lucide-react";
 
 interface PDFViewerProps {
@@ -18,6 +17,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ file }) => {
   const [annotationMode, setAnnotationMode] = useState<string | null>(null);
   const [color, setColor] = useState<string>("#FF0000");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const pdfRef = useRef<PDFDocument | null>(null);
+
   const annotations = useRef<
     Record<
       number,
@@ -34,7 +35,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ file }) => {
   const isDrawing = useRef(false);
   const signaturePath = useRef<Array<{ x: number; y: number }>>([]);
 
-  const isMobile = window.innerWidth <= 768;
+  // const isMobile = window.innerWidth <= 768;
 
   useEffect(() => {
     const handleResize = () => {
@@ -61,20 +62,30 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ file }) => {
     setTimeout(() => adjustCanvasSize(), 500);
   };
 
-  const loadPdf = async (file: File) => {
-    const pdfBytes = await file.arrayBuffer();
-    const loadedPdfDoc = await PDFDocument.load(pdfBytes);
-    setPdfDoc(loadedPdfDoc);
-    setNumPages(loadedPdfDoc.getPageCount());
-    setCurrentPage(0);
-    updatePdfPreview(loadedPdfDoc, 0);
-  };
+ 
 
-  useEffect(() => {
-    if (file) {
-      loadPdf(file);
-    }
-  }, [file]);
+const loadPdf = useCallback(async () => {
+  if (!file) return;
+
+  try {
+    const existingPdfBytes = await file.arrayBuffer();
+    const loadedPdfDoc = await PDFDocument.load(existingPdfBytes);
+
+    setPdfDoc(loadedPdfDoc);
+    pdfRef.current = loadedPdfDoc;
+    setNumPages(loadedPdfDoc.getPages().length);
+
+    updatePdfPreview(loadedPdfDoc, 0); // Show first page
+  } catch (error) {
+    console.error("Error loading PDF:", error);
+  }
+}, [file]);
+
+useEffect(() => {
+  loadPdf();
+}, [loadPdf]);
+
+
 
   const adjustCanvasSize = () => {
     const iframe = document.getElementById("pdfIframe") as HTMLIFrameElement;

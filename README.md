@@ -74,4 +74,4 @@ Solution: Stored annotations in a useRef object indexed by page number.
 
 
 
-ChatGPT can 
+
